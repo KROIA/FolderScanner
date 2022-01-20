@@ -36,10 +36,54 @@ bool ScanThread::setFolderPath(const string &path)
     m_path = path;
     return true;
 }
-void ScanThread::run()
+void ScanThread::reset()
 {
+    if(!m_threadDone)
+        return;
+
     if(m_folder != nullptr)
         delete m_folder;
+    m_folder = new Folder;
+    m_folder->setName(m_path);
+}
+void ScanThread::runScan()
+{
+    if(!m_threadDone)
+        return;
+
+    if(m_thread != nullptr)
+    {
+        m_thread->join();
+        delete m_thread;
+    }
+    if(!m_folder)
+        reset();
+
+    //qDebug() << "Thread begin";
+
+    m_startTime = high_resolution_clock::now();
+    m_endTime   = m_startTime;
+
+
+
+    ThreadData data;
+    data.fp = m_folder;
+    data.done = &m_threadDone;
+    data.endPoint = &m_endTime;
+
+    m_threadFinishedUpdateTimer->start(100);
+    m_threadDone = false;
+    m_thread = new std::thread(threadScanFunc,data);
+  //  qDebug()<< "Thread is started";
+
+    //emit resultReady(this,*m_folder);
+    //qDebug() << "Thread end";
+}
+void ScanThread::runMD5Scan()
+{
+    if(!m_threadDone)
+        return;
+
     if(m_thread != nullptr)
     {
         m_thread->join();
@@ -51,8 +95,6 @@ void ScanThread::run()
     m_startTime = high_resolution_clock::now();
     m_endTime   = m_startTime;
 
-    m_folder = new Folder;
-    m_folder->setName(m_path);
 
     ThreadData data;
     data.fp = m_folder;
@@ -61,11 +103,7 @@ void ScanThread::run()
 
     m_threadFinishedUpdateTimer->start(100);
     m_threadDone = false;
-    m_thread = new std::thread(threadFunc,data);
-  //  qDebug()<< "Thread is started";
-
-    //emit resultReady(this,*m_folder);
-    //qDebug() << "Thread end";
+    m_thread = new std::thread(threadScanMD5Func,data);
 }
 void ScanThread::cancelScan()
 {
@@ -154,6 +192,20 @@ uintmax_t ScanThread::getMasterContentSize()
         unlockThread();
     return val;
 }
+double ScanThread::getMasterMD5ScanProgress()
+{
+    double val;
+    bool lk = m_locked;
+
+    if(!lk)
+        lockThread();
+
+    val = m_folder->getMasterMD5ScanProgress();
+
+    if(!lk)
+        unlockThread();
+    return val;
+}
 
 void ScanThread::lockThread()
 {
@@ -168,10 +220,17 @@ void ScanThread::unlockThread()
     m_locked = false;
 }
 
-void ScanThread::threadFunc(ThreadData data)
+void ScanThread::threadScanFunc(ThreadData data)
 {
    // qDebug()<< "ThreadFunc";
     data.fp->scan();
+    *data.endPoint = high_resolution_clock::now();
+    *data.done = true;
+}
+void ScanThread::threadScanMD5Func(ThreadData data)
+{
+   // qDebug()<< "ThreadFunc";
+    data.fp->scanMd5();
     *data.endPoint = high_resolution_clock::now();
     *data.done = true;
 }

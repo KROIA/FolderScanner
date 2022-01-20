@@ -36,14 +36,20 @@ class MainWindow : public QMainWindow
     private slots:
         void on_scan_pushButton_clicked();
         void onScanUpdateTimer();
+        void onScanMd5UpdateTimer();
 
         void onScanThreadResultFinish(ScanThread *thread, const Folder &folder);
 
         void on_cancel_pushButton_clicked();
 
+        void on_scanMd5_pushButton_clicked();
+
+        void on_rescan_pushButton_clicked();
+
     private:
         Ui::MainWindow *ui;
         QTimer *scanUpdateTimer;
+        QTimer *scanMd5UpdateTimer;
         ScanThread *scanThread;
 
         QScrollArea *frame;

@@ -44,5 +44,7 @@ class File
     private:
         std::filesystem::directory_entry m_dirEntry;
         string m_md5;
+
+        QList<QStandardItem*> m_standardItems;
 };
 #endif // FILE_H

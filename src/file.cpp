@@ -5,6 +5,17 @@ File::File(const std::filesystem::directory_entry &entry)
 {
     m_dirEntry = entry;
 
+    m_standardItems.push_back(new QStandardItem());
+    m_standardItems.push_back(new QStandardItem());
+    m_standardItems.push_back(new QStandardItem());
+    m_standardItems.push_back(new QStandardItem());
+    m_standardItems[0]->setEditable(false);
+    m_standardItems[1]->setEditable(false);
+    m_standardItems[2]->setEditable(false);
+    m_standardItems[3]->setEditable(false);
+    m_standardItems[0]->setText(QString::fromStdString(m_dirEntry.path().filename().string()));
+    m_standardItems[1]->setText(QString::fromStdString(File::sizeToStr(size())));
+    m_standardItems[2]->setText(QString::number(size()));
 }
 File::~File()
 {
@@ -28,7 +39,7 @@ uintmax_t File::size() const
 const string File::getMd5()
 {
     if(m_md5 == "")
-        md5(*this);
+        return md5(*this);
     return m_md5;
 }
 
@@ -76,9 +87,11 @@ bool File::isEqual(File &other,bool useMd5, bool useName)
 
 QList<QStandardItem *> File::getStandardItem() const
 {
-    return {new QStandardItem(QString::fromStdString(getName())),
+    return m_standardItems;
+   /* return {new QStandardItem(QString::fromStdString(getName())),
             new QStandardItem(QString::fromStdString(sizeToStr(size()))),
-            new QStandardItem(QString::number(size()))};
+            new QStandardItem(QString::number(size())),
+            new QStandardItem(QString::fromStdString(m_md5))};*/
 }
 string File::sizeToStr(uintmax_t size)
 {
@@ -130,19 +143,21 @@ string File::sizeToStr(uintmax_t size)
 string File::md5 (File& file) {
 
     QFile _file(QString::fromStdString(file.getPath()));
-    string md5Hash;
     if (_file.open(QIODevice::ReadOnly))
     {
         QByteArray fileData = _file.readAll();
 
         QByteArray hashData = QCryptographicHash::hash(fileData,QCryptographicHash::Md5); // or QCryptographicHash::Sha1
-        md5Hash = hashData.toStdString();
+        file.m_md5 = hashData.toHex().toStdString();
+        file.m_standardItems[3]->setText(QString::fromStdString(file.m_md5));
+
+       // qDebug() << "MD5: "<<file.m_md5.c_str()<<"\t of: "<<file.getPath().c_str();
     }
     else
     {
         qDebug() << "Can't open file to calculate the MD5 hash. File: "<<file.getPath().c_str();
     }
-    return md5Hash;
+    return file.m_md5;
 }
 
 

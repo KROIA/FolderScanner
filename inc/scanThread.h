@@ -25,7 +25,9 @@ class ScanThread    :   public QObject// : public QThread
 
         bool setFolderPath(const string &path);
 
-        void run();
+        void reset();
+        void runScan();
+        void runMD5Scan();
         void cancelScan();
 
         bool isRunning();
@@ -39,6 +41,7 @@ class ScanThread    :   public QObject// : public QThread
         size_t getMasterFolderCount();
         size_t getMasterFileCount();
         uintmax_t getMasterContentSize();
+        double getMasterMD5ScanProgress();
 
         void lockThread();
         void unlockThread();
@@ -57,7 +60,8 @@ private slots:
         Folder *fp;
         std::atomic<high_resolution_clock::time_point> *endPoint;
     };
-    static void threadFunc(ThreadData data);
+    static void threadScanFunc(ThreadData data);
+    static void threadScanMD5Func(ThreadData data);
 
     Folder *m_folder;
     string m_path;
