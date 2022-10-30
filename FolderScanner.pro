@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui svg
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -10,25 +10,60 @@ CONFIG += c++17
 
 incPath = inc
 srcPath = src
+formsPath = forms
 
-LIBS += -lstdc++fs
-INCLUDEPATH += $$incPath
+include(extern/Qt-Ribbon-Widget/QT-Ribbon-Widget.pri)
+
+# INCLUDEPATH += C:\boost_1_79_0\boost_mingw_530/include/boost-1_79
+# LIBS += -LC:\boost_1_79_0\boost_mingw_530\lib -llibboost_filesystem-mgw11-mt-x64-1_79
+
+
+LIBS += -lstdc++fs \
+
+INCLUDEPATH += $$incPath\
+               $$incPath/ui
 
 SOURCES += \
     $$srcPath/file.cpp \
     $$srcPath/folder.cpp \
     $$srcPath/main.cpp \
-    $$srcPath/mainwindow.cpp \
-    $$srcPath/scanThread.cpp
+    $$srcPath/ui/mainwindow.cpp \
+    $$srcPath/scanThread.cpp \
+    $$srcPath/stringUtility.cpp \
+    $$srcPath/ui/fileScanPage.cpp \
+    $$srcPath/ui/treeViewPage.cpp \
+    $$srcPath/ui/compareScanPage.cpp \
+    $$srcPath/ui/duplicateScanPage.cpp \
+    src/ui/lineCountPage.cpp \
+    src/ui/mainwindowRibbon.cpp \
+    src/utility.cpp
+
 
 HEADERS += \
     $$incPath/file.h \
     $$incPath/folder.h \
-    $$incPath/mainwindow.h \
-    $$incPath/scanThread.h
+    $$incPath/ui/mainwindow.h \
+    $$incPath/scanThread.h \
+    $$incPath/stringUtility.h \
+    $$incPath/ui/fileScanPage.h \
+    $$incPath/ui/treeViewPage.h \
+    $$incPath/ui/compareScanPage.h \
+    $$incPath/ui/duplicateScanPage.h \
+    inc/ui/lineCountPage.h \
+    inc/ui/mainwindowRibbon.h \
+    inc/utility.h
 
 FORMS += \
-    mainwindow.ui
+    $$formsPath/duplicateScanPage.ui \
+    $$formsPath/fileScanPage.ui \
+    $$formsPath/compareScanPage.ui \
+    $$formsPath/mainwindow.ui \
+    forms/lineCountPage.ui
+
+RESOURCES += \
+        resource.qrc
+
+RC_ICONS = icons/scanArchive.ico
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

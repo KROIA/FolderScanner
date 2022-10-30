@@ -5,6 +5,8 @@
 #include "mainwindow.h"
 
 #include <QApplication>
+#include <QStyleFactory>
+#include <QtPlugin>
 
 #include "folder.h"
 
@@ -16,6 +18,9 @@ using std::filesystem::recursive_directory_iterator;
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    //Q_IMPORT_PLUGIN(QSvgPlugin)
+    qDebug() << QStyleFactory::keys();
+    a.setStyle(QStyleFactory::create("Fusion"));
    /* string path = "E:\\Dokumente\\QT\\Projects\\FolderScanner";
 
     Folder folder;

@@ -4,6 +4,7 @@
 //#include <QThread>
 #include <QMessageBox>
 //#include <QMutex>
+
 #include <thread>         // std::thread
 #include <mutex>
 #include <atomic>
@@ -12,8 +13,15 @@
 #include <ratio>
 #include <chrono>
 #include "folder.h"
+#include "utility.h"
 
-
+enum Task
+{
+    none,
+    fileScan,
+    md5Scan,
+    lineCounter
+};
 using namespace std::chrono;
 class ScanThread    :   public QObject// : public QThread
 {
@@ -28,51 +36,79 @@ class ScanThread    :   public QObject// : public QThread
         void reset();
         void runScan();
         void runMD5Scan();
+        void runLineCounter();
         void cancelScan();
 
         bool isRunning();
+        Task getCurrentTask();
         double getRuntime();
 
 
 
-        const Folder &getFolderResult() const;
+
+        Folder *getFolderResult() const;
 
         // FolderInterface
         size_t getMasterFolderCount();
         size_t getMasterFileCount();
         uintmax_t getMasterContentSize();
-        double getMasterMD5ScanProgress();
+        double getMasterProgress();
 
         void lockThread();
         void unlockThread();
 
 
 signals:
+    void onReset();
     void resultReady(ScanThread *thread,const Folder &);
 
 private slots:
-    void onThreadFinishedUpdateTimerFinished();
+    //void onThreadFinishedUpdateTimerFinished();
 
     private:
-    struct ThreadData
+    struct ThreadDataScan
     {
         std::atomic<bool> *done;
-        Folder *fp;
-        std::atomic<high_resolution_clock::time_point> *endPoint;
+        Folder* fp;
+        //std::atomic<high_resolution_clock::time_point> *endPoint;
     };
-    static void threadScanFunc(ThreadData data);
-    static void threadScanMD5Func(ThreadData data);
+    struct ThreadData
+    {
+        size_t threadIndex;
+        Folder *masterFolder;
+        File **list;
+        size_t listSize;
+        size_t *beginPoint;
+        size_t jobSize;
+        bool *exit;
+        int *threadsActiveCount;
+    };
+
+
+    static void threadScanFunc(ThreadDataScan data);
+    static void fastThreadScanMD5Func(ThreadData *data);
+    static void fastThreadCountLinesFunc(ThreadData *data);
 
     Folder *m_folder;
     string m_path;
-    //QMutex m_mutex;
-    std::mutex m_mutex;
+    static std::mutex m_mutex;
 
-    std::thread *m_thread;
+    // file scanner
+    std::thread *m_scanThread;
     std::atomic<bool> m_threadDone;
-    QTimer *m_threadFinishedUpdateTimer;
+
+    // md5 scanner
+
+
+    // line counter
+
+
+
 
     bool m_locked;
+    Task m_currentTask;
+    bool m_exitTask;
+
 
     // statistics
     high_resolution_clock::time_point m_startTime;

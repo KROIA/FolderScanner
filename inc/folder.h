@@ -2,13 +2,23 @@
 #define FOLDER_H
 
 #include <filesystem>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <QMutex>
 #include <unordered_map>
 #include <chrono>
+#include <locale>
+#include <codecvt>
+
+#include <thread>         // std::thread
+#include <mutex>
+
+//#include <boost/filesystem.hpp>
 
 #include "file.h"
+
+#define FOLDER_TRHEADED_SCAN
 
 
 using std::string;
@@ -30,16 +40,21 @@ class Folder
         size_t getMasterFolderCount() const;
         size_t getMasterFileCount() const;
         uintmax_t getMasterContentSize() const;
-        double getMasterMD5ScanProgress() const; // percent
+        double getMasterProgress() const; // percent
 
+        void scanThreaded();
         void scan();
         void scanMd5();
+        void resetProgress();
         void cancelScan();
+
 
 
         uintmax_t size() const;
         size_t fileCount() const;
         size_t folderCount() const;
+        const vector<Folder*> &getSubFolder();
+        const vector<File*> &getFiles();
         const string getMd5();
 
 
@@ -55,7 +70,23 @@ class Folder
 
         static string md5(Folder& folder);
 
+       // void readImportData(const vector<string> &data);
+       // vector<string> getExportData();
+        bool importFromFile(const string &file);
+        bool exportToFile(const string &file) const;
+        void exportToTable(vector<string> &table) const;
+        void getAllFileDataRecursive(vector<FileData> &list) const;
+        void getAllFilesRecursive(vector<File*> &list) const;
+        void getAllFoldersRecursive(vector<Folder*> &list);
+
     private:
+        void scanInternal();
+        void internalImportFromFile(std::ifstream &s);
+        void internalExportToFile(std::ofstream &s)const;
+        void internalExportToTable(vector<string> &table)const;
+        void internalGetAllFilesRecursive(vector<FileData> &list) const;
+        void internalGetAllFilesRecursive(vector<File*> &list) const;
+        void internalGetAllFoldersRecursive(vector<Folder*> &list) const;
         void incrementFolderSize(uintmax_t size);
         void sort();
 
@@ -76,13 +107,38 @@ class Folder
         void masterAddFolderCount(size_t increment);
         void masterAddFileCount(size_t increment);
         void masterAddContentSize(uintmax_t increment);
-        void masterAddMd5Progress(size_t increment);
-
+    public:
+        void masterResetProgress();
+        void masterAddProgress(size_t increment);
+    private:
         size_t *m_master_folderCount;
         size_t *m_master_fileCount;
         uintmax_t *m_master_contentSize;
-        uintmax_t *m_master_md5ProgressCounter;
+        uintmax_t *m_master_progressCounter;
         QMutex *m_masterMutex;
         bool *m_master_escapeScan;
+#ifdef FOLDER_TRHEADED_SCAN
+        struct ThreadData
+        {
+            size_t threadIndex;
+            Folder **list;
+            size_t listSize;
+            size_t *beginPoint;
+            size_t jobSize;
+            bool *exit;
+            int *threadsActiveCount;
+        };
+
+        static std::mutex m_mutex;
+        static int m_threadActiveCount;
+        static bool m_threadExit;
+        static size_t m_maxThreadCount;
+        static vector<std::thread*> m_threadList;
+        static bool m_threadsExecuted;
+
+
+        static void scanThreadFunc(ThreadData *data);
+
+#endif
 };
 #endif // FOLDER_H
