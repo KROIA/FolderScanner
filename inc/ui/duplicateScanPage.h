@@ -30,10 +30,12 @@ class DuplicateScanPage : public QWidget
         void setProgress(double percent,const string &message = "");
     public slots:
         void scan();
+        void deleteDuplicates();
         void clear();
 
     private slots:
         void onUpdateTimer();
+
 
     private:
         void updateProgress();
@@ -47,6 +49,9 @@ class DuplicateScanPage : public QWidget
         QTimer *m_updateTimer;
         double m_progressPercent;
         ProgressStep m_progressStep;
+
+        std::unordered_map<std::string, vector<FileData>> m_duplicates;
+        vector<FileData> m_content;
 
 
 };

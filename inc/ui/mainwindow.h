@@ -52,6 +52,7 @@ class MainWindow : public QMainWindow
         void onCompareButtonClicked();
 
         void on_scanDuplicates_pushButton_clicked();
+        void onDeleteDuplicatesPushButtonClicked();
         void onCountLinesButtonClicked();
 
         void onVersionButtonClicked();

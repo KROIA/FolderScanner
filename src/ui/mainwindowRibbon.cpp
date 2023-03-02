@@ -135,6 +135,8 @@ void MainWindowRibbon::buildToolButtons()
 
     m_toolButtons.searchForDuplicates        = buttonFactory("Search for duplicates","Searches for duplicate files in the current directory",
                                                  "equalSign", true, tab, "Analyse this directory");
+    m_toolButtons.deleteDuplicates        = buttonFactory("Delete duplicates","Searches for duplicate files and deletes the duplicates of each file",
+                                                 "cleanup", true, tab, "Analyse this directory");
     m_toolButtons.countFileContent           = buttonFactory("Count lines","Read all files and count the lines for every file",
                                                  "counter", true, tab, "Analyse this directory");
 }

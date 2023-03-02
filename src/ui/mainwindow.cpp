@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 
 
-const string MainWindow::m_versionsText = "© by Alex Krieg\n18.04.2022\nv00.00.07";
+const string MainWindow::m_versionsText = "© by Alex Krieg\n02.03.2023\nv00.00.08";
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -59,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
     //connect(toolB.compareLoadFirstFileButton,&QToolButton::pressed,this,&MainWindow::onCompareButtonClicked);
     connect(toolB.compareCurrentToLoadedFile,&QToolButton::clicked,this,&MainWindow::onCompareButtonClicked);
     connect(toolB.searchForDuplicates,&QToolButton::clicked,this,&MainWindow::on_scanDuplicates_pushButton_clicked);
+    connect(toolB.deleteDuplicates,&QToolButton::clicked,this,&MainWindow::onDeleteDuplicatesPushButtonClicked);
     connect(toolB.countFileContent,&QToolButton::clicked,this,&MainWindow::onCountLinesButtonClicked);
 
 
@@ -116,6 +117,7 @@ void MainWindow::on_scan_pushButton_clicked()
         m_fileScanTreeView->scanFiles();
         //threadTaskUpdateTimer->stop();
         m_scanNeedsUpdate = false;
+        m_scanNeedsUpdate = true;
     }
 }
 void MainWindow::on_rescan_pushButton_clicked()
@@ -263,6 +265,8 @@ void MainWindow::onCompareButtonClicked()
 
 void MainWindow::on_scanDuplicates_pushButton_clicked()
 {
+    m_duplicateScanTreeView->clear();
+    on_rescan_pushButton_clicked();
     if(scanThread->isRunning())
     {
         qDebug() << "scanning...";
@@ -275,6 +279,43 @@ void MainWindow::on_scanDuplicates_pushButton_clicked()
     }
     goToPage(PageIndex::duplicateScanPage);
     m_duplicateScanTreeView->scan();
+}
+void MainWindow::onDeleteDuplicatesPushButtonClicked()
+{
+    QMessageBox msgBox;
+    msgBox.setText("Delete duplicates?");
+    msgBox.setInformativeText("Do you want to delete all duplicate files in the directory?\n"
+                              "This can not be undo.");
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    int ret = msgBox.exec();
+    if(ret != QMessageBox::Yes)
+        return;
+
+    msgBox.setText("Rescan first?");
+    msgBox.setInformativeText("Do you want to rescan the directory before you delete the duplicates?");
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    int doRescan = msgBox.exec();
+    if(doRescan == QMessageBox::Yes)
+    {
+        m_duplicateScanTreeView->clear();
+        on_rescan_pushButton_clicked();
+    }
+
+
+    if(scanThread->isRunning())
+    {
+        qDebug() << "scanning...";
+        return;
+    }
+    Folder *f = scanThread->getFolderResult();
+    if(!f || m_md5NeedsUpdate)
+    {
+        on_scanMd5_pushButton_clicked();
+    }
+    goToPage(PageIndex::duplicateScanPage);
+    m_duplicateScanTreeView->deleteDuplicates();
 }
 void MainWindow::onCountLinesButtonClicked()
 {

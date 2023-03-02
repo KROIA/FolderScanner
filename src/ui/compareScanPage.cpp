@@ -115,6 +115,7 @@ void CompareScanPage::compare(vector<FileData> &A,
 
 
     size_t progressCounter = 0;
+    size_t line = 0;
     for(size_t i=0; i<missmatchList.size(); ++i)
     {
         FileData *A = &missmatchList[i].A;
@@ -129,23 +130,24 @@ void CompareScanPage::compare(vector<FileData> &A,
         fullPathA+=A->getName();
         fullPathB+=B->getName();
 
-        rawTable.push_back({std::to_string(i),fullPathA,FileData::sizeToStr(A->getSize()),std::to_string(A->getSize()),A->getMd5(),
+        rawTable.push_back({std::to_string(line),fullPathA,FileData::sizeToStr(A->getSize()),std::to_string(A->getSize()),A->getMd5(),
                                                   fullPathB,FileData::sizeToStr(B->getSize()),std::to_string(B->getSize()),B->getMd5()});
 
         int column = 0;
         QModelIndex modelIndex;
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,fullPathA.c_str());
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,FileData::sizeToStr(A->getSize()).c_str());
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,A->getSize());
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,A->getMd5().c_str());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,fullPathA.c_str());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,FileData::sizeToStr(A->getSize()).c_str());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,A->getSize());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,A->getMd5().c_str());
 
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,fullPathB.c_str());
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,FileData::sizeToStr(B->getSize()).c_str());
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,B->getSize());
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,B->getMd5().c_str());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,fullPathB.c_str());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,FileData::sizeToStr(B->getSize()).c_str());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,B->getSize());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,B->getMd5().c_str());
 
         m_progressPercent = (double)++progressCounter/(double)tableRowCount;
         processQEvents();
+        ++line;
     }
 
     for(size_t i=0; i<deletedFiles.size(); ++i)
@@ -156,19 +158,20 @@ void CompareScanPage::compare(vector<FileData> &A,
         fullPathA+=deletedFiles[i].getName();
 
 
-        rawTable.push_back({std::to_string(i),fullPathA,FileData::sizeToStr(deletedFiles[i].getSize()),std::to_string(deletedFiles[i].getSize()),deletedFiles[i].getMd5(),
-                                              "","",""});
+        rawTable.push_back({std::to_string(line),fullPathA,FileData::sizeToStr(deletedFiles[i].getSize()),std::to_string(deletedFiles[i].getSize()),deletedFiles[i].getMd5(),
+                                              "","","",""});
 
         int column = 0;
         QModelIndex modelIndex;
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,fullPathA.c_str());
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,FileData::sizeToStr(deletedFiles[i].getSize()).c_str());
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,deletedFiles[i].getSize());
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,deletedFiles[i].getMd5().c_str());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,fullPathA.c_str());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,FileData::sizeToStr(deletedFiles[i].getSize()).c_str());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,deletedFiles[i].getSize());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,deletedFiles[i].getMd5().c_str());
 
 
         m_progressPercent = (double)++progressCounter/(double)tableRowCount;
         processQEvents();
+        ++line;
     }
     for(size_t i=0; i<newFiles.size(); ++i)
     {
@@ -177,17 +180,18 @@ void CompareScanPage::compare(vector<FileData> &A,
             fullPathB = newFiles[i].getPath()+"/";
         fullPathB+=newFiles[i].getName();
         //string fullPathB = newFiles[i]->getPath()+"\\"+newFiles[i]->getName();
-        rawTable.push_back({std::to_string(i),"","","",
+        rawTable.push_back({std::to_string(i),"","","","",
                             fullPathB,FileData::sizeToStr(newFiles[i].getSize()),std::to_string(newFiles[i].getSize()),newFiles[i].getMd5()});
-        int column = 3;
+        int column = 4;
         QModelIndex modelIndex;
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,fullPathB.c_str());
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,FileData::sizeToStr(newFiles[i].getSize()).c_str());
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,newFiles[i].getSize());
-        modelIndex = m_tableModel->index(i,column++,QModelIndex());   m_tableModel->setData(modelIndex,newFiles[i].getMd5().c_str());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,fullPathB.c_str());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,FileData::sizeToStr(newFiles[i].getSize()).c_str());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,newFiles[i].getSize());
+        modelIndex = m_tableModel->index(line,column++,QModelIndex());   m_tableModel->setData(modelIndex,newFiles[i].getMd5().c_str());
 
         m_progressPercent = (double)++progressCounter/(double)tableRowCount;
         processQEvents();
+        ++line;
     }
 
 

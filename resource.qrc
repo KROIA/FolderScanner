@@ -31,5 +31,6 @@
         <file>icons/cancel.png</file>
         <file>icons/counter.png</file>
         <file>icons/play.png</file>
+        <file>icons/cleanup.png</file>
     </qresource>
 </RCC>

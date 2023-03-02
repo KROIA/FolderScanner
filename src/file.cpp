@@ -16,6 +16,7 @@ FileData::FileData(const boost::filesystem::directory_entry &entry)
     m_path = entry.path().string();
     m_path = m_path.substr(0,m_path.rfind(m_fileName)-1);
     m_size = boost::filesystem::file_size(entry.path());
+    setPath(m_path);
     m_linesCounted = false;
     m_lineCount = 0;
     m_charCount = 0;
@@ -27,6 +28,7 @@ FileData::FileData(const std::filesystem::directory_entry &entry)
     m_fileName = entry.path().filename().string();
     m_path = entry.path().string();
     m_path = m_path.substr(0,m_path.rfind(m_fileName)-1);
+    setPath(m_path);
     m_size = entry.file_size();
     m_linesCounted = false;
     m_lineCount = 0;

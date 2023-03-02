@@ -25,7 +25,9 @@ struct ToolButtons
     QToolButton *compareCurrentToLoadedFile;
 
     QToolButton *searchForDuplicates;
+    QToolButton *deleteDuplicates;
     QToolButton *countFileContent;
+
 };
 
 class MainWindowRibbon : public QWidget

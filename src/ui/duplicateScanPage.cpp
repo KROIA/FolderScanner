@@ -34,7 +34,8 @@ void DuplicateScanPage::scan()
     m_progressPercent = 0.01;
 
     f->getAllFileDataRecursive(content);
-    searchDuplicates(content);
+    m_content = content;
+    searchDuplicates(m_content);
 
     m_updateTimer->stop();
     emit setProgress(1,"");
@@ -44,10 +45,47 @@ void DuplicateScanPage::scan()
 void DuplicateScanPage::clear()
 {
     m_treeView->clear();
+    m_duplicates.clear();
+    m_content.clear();
 }
 void DuplicateScanPage::onUpdateTimer()
 {
     updateProgress();
+}
+void DuplicateScanPage::deleteDuplicates()
+{
+    if(m_content.size() == 0)
+        scan();
+
+    size_t deletedCount = 0;
+    size_t bytesDeleted = 0;
+    for(auto &data : m_duplicates)
+    {
+        size_t duplicateCount = data.second.size();
+        if(duplicateCount > 1)
+        {
+            for(size_t i=1; i<data.second.size(); ++i)
+            {
+                string fullPath;
+                if(data.second[i].getPath().size() > 0)
+                    fullPath = data.second[i].getPath()+"/";
+                fullPath+= data.second[i].getName();
+                if(QFile::remove(fullPath.c_str()))
+                {
+                    ++deletedCount;
+                    bytesDeleted += data.second[i].getSize();
+                }
+                else
+                {
+                    qDebug() << "Can't delete: "<<fullPath.c_str();
+                }
+            }
+        }
+    }
+
+    qDebug() << deletedCount << " Files deleted, "<<FileData::sizeToStr(bytesDeleted).c_str();
+    QMessageBox::information(this,"Files deleted",QString::number(deletedCount)+" Files deleted\n"+
+                             "["+FileData::sizeToStr(bytesDeleted).c_str()+"]");
 }
 
 void DuplicateScanPage::updateProgress()
@@ -185,7 +223,7 @@ void DuplicateScanPage::searchDuplicates(vector<FileData> &data)
         {
             string fullPath;
             if(p[i].getPath().size() > 0)
-                fullPath = p[i].getPath()+"\\";
+                fullPath = p[i].getPath()+"/";
             fullPath+= p[i].getName();
             QList<QStandardItem*> standardItems;
             standardItems.reserve(6);
@@ -223,4 +261,6 @@ void DuplicateScanPage::searchDuplicates(vector<FileData> &data)
                          {"Name","size","Size [bytes]","Wasted","MD5 Hash","Full Path"});
      //updateUIDuplicateListView(tree,{"Name","size","Size [bytes]","Wasted","MD5 Hash","Full Path"});
      m_progressPercent = 1;
+
+     m_duplicates = duplicates;
 }
